@@ -36,7 +36,7 @@ function route() {
   VIEWS.forEach((name) => { const el = document.getElementById('view-' + name); if (el) el.hidden = name !== v; });
   if (currentView !== v) { currentView = v; window.scrollTo(0, 0); }
   if (RENDER[v]) RENDER[v]();
-  const titles = { lab: 'Lab', tables: 'Tables', quiz: 'Quiz', pyq: 'Previous year questions', learn: 'Learn', help: 'Help', team: 'Developed by', download: 'Download' };
+  const titles = { lab: 'Lab', tables: 'Tables', quiz: 'Quiz', pyq: 'Competitive exams', learn: 'Learn', help: 'Help', team: 'Developed by', download: 'Download' };
   document.title = 'Normalization Virtual Lab · ' + titles[v];
 }
 

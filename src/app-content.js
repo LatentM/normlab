@@ -315,7 +315,7 @@ RENDER.help = function () {
     <li>Read the summary: the dependency diagram, the normal-form ladder and the facts row.</li>
     <li>Open the tabs for the working: Normal forms, Closure, Keys, Minimal cover, Decompose.</li>
     <li>To check a decomposition, type it in <b>Decomposition to test</b> or press <b>Test this split</b> in the Decompose tab, then step through the chase.</li>
-    <li>Practise in <b>Quiz</b> or <b>PYQs</b>; use <b>Solve in the lab</b> on any question to see the full working.</li>
+    <li>Practise in <b>Quiz</b> or <b>Competitive exams</b>; use <b>Solve in the lab</b> on any question to see the full working.</li>
     <li>Export the current analysis from <b>Download</b>.</li></ol></section>
   <section><h2>Normalizing a table of data</h2><ol>
     <li>Open <b>Tables</b>. An example table is loaded; pick another from <b>Load an example</b>, upload a CSV, TSV, Markdown or Excel file, paste rows in <b>Text</b> view, or type into the <b>Grid</b>.</li>

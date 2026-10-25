@@ -1,0 +1,7 @@
+# Netlify reads this file and it overrides the build settings in the Netlify dashboard.
+[build]
+  command = "node build.js"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"

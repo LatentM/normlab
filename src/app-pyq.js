@@ -48,7 +48,7 @@ RENDER.pyq = function () {
   const right = PYQ.filter((q) => PYQSTATE.prog[q.id] && PYQSTATE.prog[q.id].s === 'right').length;
   const wrong = PYQ.filter((q) => PYQSTATE.prog[q.id] && PYQSTATE.prog[q.id].s === 'wrong').length;
   const years = PYQ.map((q) => q.year);
-  root.innerHTML = `<div class="view-head"><div><h1>Previous year questions</h1><p class="muted">${PYQ.length} questions on functional dependencies and normalization from GATE CSE, GATE IT and UGC NET, ${Math.min(...years)}–${Math.max(...years)}. Every computational answer key was re-derived by this lab’s engine, and most questions open straight into the lab.</p></div></div>
+  root.innerHTML = `<div class="view-head"><div><h1>Competitive exams</h1><p class="muted">${PYQ.length} previous-year questions on functional dependencies and normalization from GATE CSE, GATE IT and UGC NET, ${Math.min(...years)}–${Math.max(...years)}. Every computational answer key was re-derived by this lab’s engine, and most questions open straight into the lab.</p></div></div>
   <div class="pyq-top">
     <div class="panel pad"><div class="stat-row">
       <div class="stat"><b>${PYQ.length}</b><span>questions</span></div><div class="stat"><b>${right}</b><span>solved correctly</span></div>

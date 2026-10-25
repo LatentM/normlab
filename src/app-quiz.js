@@ -335,7 +335,7 @@ function renderQuizDone(root) {
   const correct = res.filter((r) => r.correct).length, wrong = res.filter((r) => r.attempted && !r.correct).length;
   const byTopic = {}; QUIZ.qs.forEach((q, i) => { byTopic[q.topic] = byTopic[q.topic] || { n: 0, c: 0 }; byTopic[q.topic].n++; if (res[i].correct) byTopic[q.topic].c++; });
   root.innerHTML = `<div class="view-head"><div><h1>Results</h1><p class="muted">${esc(QUIZ.title)}</p></div>
-    <div class="row"><button class="btn" id="q-again">${QUIZ.origin === 'pyq' ? 'Back to PYQs' : 'New quiz'}</button></div></div>
+    <div class="row"><button class="btn" id="q-again">${QUIZ.origin === 'pyq' ? 'Back to Competitive exams' : 'New quiz'}</button></div></div>
   <div class="split2">
     <div class="panel pad"><span class="small muted">Score</span><div class="score-big num">${total} <span class="muted" style="font-size:1.2rem">/ ${max}</span></div>
       <div class="stat-row" style="margin-top:14px"><div class="stat"><b>${correct}</b><span>correct</span></div><div class="stat"><b>${wrong}</b><span>wrong</span></div><div class="stat"><b>${QUIZ.qs.length - correct - wrong}</b><span>skipped</span></div><div class="stat"><b>${fmtTime(Math.round((QUIZ.end - QUIZ.start) / 1000))}</b><span>time</span></div></div>

@@ -412,7 +412,7 @@ details summary { cursor: pointer; color: var(--accent); }
   <a class="brand" href="#lab" aria-label="Normalization Virtual Lab, home">
     <svg viewBox="0 0 34 34" aria-hidden="true"><rect x="1" y="3" width="9" height="9" rx="2" fill="none" stroke="var(--ink)" stroke-width="1.6"/><rect x="12.5" y="3" width="9" height="9" rx="2" fill="var(--prime-soft)" stroke="var(--prime)" stroke-width="1.6"/><rect x="24" y="3" width="9" height="9" rx="2" fill="none" stroke="var(--ink)" stroke-width="1.6"/><path d="M5.5 12v12h23V15" fill="none" stroke="var(--accent)" stroke-width="2"/><path d="M25 17.5l3.5-4.5 3.5 4.5z" fill="var(--accent)"/><circle cx="5.5" cy="13.5" r="1.8" fill="var(--accent)"/></svg>
     <span><b>Normalization Virtual Lab</b><small>BACSE202 Database Systems · VIT Chennai</small></span></a>
-  <nav class="nav" aria-label="Primary"><a href="#lab" data-nav="lab">Lab</a><a href="#tables" data-nav="tables">Tables</a><a href="#quiz" data-nav="quiz">Quiz</a><a href="#pyq" data-nav="pyq">PYQs</a></nav>
+  <nav class="nav" aria-label="Primary"><a href="#lab" data-nav="lab">Lab</a><a href="#tables" data-nav="tables">Tables</a><a href="#quiz" data-nav="quiz">Quiz</a><a href="#pyq" data-nav="pyq">Competitive exams</a></nav>
   <nav class="util" aria-label="Utility">
     <a href="#learn" data-nav="learn" class="learn">Learn</a><a href="#help" data-nav="help">Help</a><a href="#team" data-nav="team">Developed by</a><a href="#download" data-nav="download">Download</a>
     <button class="theme-btn" id="theme-btn" type="button" aria-pressed="false"></button>
@@ -422,7 +422,7 @@ details summary { cursor: pointer; color: var(--accent); }
   <section id="view-lab" aria-label="Lab"></section>
   <section id="view-tables" aria-label="Tables" hidden></section>
   <section id="view-quiz" aria-label="Quiz" hidden></section>
-  <section id="view-pyq" aria-label="Previous year questions" hidden></section>
+  <section id="view-pyq" aria-label="Competitive exams" hidden></section>
   <section id="view-learn" aria-label="Learn" hidden></section>
   <section id="view-help" aria-label="Help" hidden></section>
   <section id="view-team" aria-label="Developed by" hidden></section>
@@ -1895,7 +1895,7 @@ function route() {
   VIEWS.forEach((name) => { const el = document.getElementById('view-' + name); if (el) el.hidden = name !== v; });
   if (currentView !== v) { currentView = v; window.scrollTo(0, 0); }
   if (RENDER[v]) RENDER[v]();
-  const titles = { lab: 'Lab', tables: 'Tables', quiz: 'Quiz', pyq: 'Previous year questions', learn: 'Learn', help: 'Help', team: 'Developed by', download: 'Download' };
+  const titles = { lab: 'Lab', tables: 'Tables', quiz: 'Quiz', pyq: 'Competitive exams', learn: 'Learn', help: 'Help', team: 'Developed by', download: 'Download' };
   document.title = 'Normalization Virtual Lab · ' + titles[v];
 }
 
@@ -3148,7 +3148,7 @@ function renderQuizDone(root) {
   const correct = res.filter((r) => r.correct).length, wrong = res.filter((r) => r.attempted && !r.correct).length;
   const byTopic = {}; QUIZ.qs.forEach((q, i) => { byTopic[q.topic] = byTopic[q.topic] || { n: 0, c: 0 }; byTopic[q.topic].n++; if (res[i].correct) byTopic[q.topic].c++; });
   root.innerHTML = `<div class="view-head"><div><h1>Results</h1><p class="muted">${esc(QUIZ.title)}</p></div>
-    <div class="row"><button class="btn" id="q-again">${QUIZ.origin === 'pyq' ? 'Back to PYQs' : 'New quiz'}</button></div></div>
+    <div class="row"><button class="btn" id="q-again">${QUIZ.origin === 'pyq' ? 'Back to Competitive exams' : 'New quiz'}</button></div></div>
   <div class="split2">
     <div class="panel pad"><span class="small muted">Score</span><div class="score-big num">${total} <span class="muted" style="font-size:1.2rem">/ ${max}</span></div>
       <div class="stat-row" style="margin-top:14px"><div class="stat"><b>${correct}</b><span>correct</span></div><div class="stat"><b>${wrong}</b><span>wrong</span></div><div class="stat"><b>${QUIZ.qs.length - correct - wrong}</b><span>skipped</span></div><div class="stat"><b>${fmtTime(Math.round((QUIZ.end - QUIZ.start) / 1000))}</b><span>time</span></div></div>
@@ -3212,7 +3212,7 @@ RENDER.pyq = function () {
   const right = PYQ.filter((q) => PYQSTATE.prog[q.id] && PYQSTATE.prog[q.id].s === 'right').length;
   const wrong = PYQ.filter((q) => PYQSTATE.prog[q.id] && PYQSTATE.prog[q.id].s === 'wrong').length;
   const years = PYQ.map((q) => q.year);
-  root.innerHTML = `<div class="view-head"><div><h1>Previous year questions</h1><p class="muted">${PYQ.length} questions on functional dependencies and normalization from GATE CSE, GATE IT and UGC NET, ${Math.min(...years)}–${Math.max(...years)}. Every computational answer key was re-derived by this lab’s engine, and most questions open straight into the lab.</p></div></div>
+  root.innerHTML = `<div class="view-head"><div><h1>Competitive exams</h1><p class="muted">${PYQ.length} previous-year questions on functional dependencies and normalization from GATE CSE, GATE IT and UGC NET, ${Math.min(...years)}–${Math.max(...years)}. Every computational answer key was re-derived by this lab’s engine, and most questions open straight into the lab.</p></div></div>
   <div class="pyq-top">
     <div class="panel pad"><div class="stat-row">
       <div class="stat"><b>${PYQ.length}</b><span>questions</span></div><div class="stat"><b>${right}</b><span>solved correctly</span></div>
@@ -3614,7 +3614,7 @@ RENDER.help = function () {
     <li>Read the summary: the dependency diagram, the normal-form ladder and the facts row.</li>
     <li>Open the tabs for the working: Normal forms, Closure, Keys, Minimal cover, Decompose.</li>
     <li>To check a decomposition, type it in <b>Decomposition to test</b> or press <b>Test this split</b> in the Decompose tab, then step through the chase.</li>
-    <li>Practise in <b>Quiz</b> or <b>PYQs</b>; use <b>Solve in the lab</b> on any question to see the full working.</li>
+    <li>Practise in <b>Quiz</b> or <b>Competitive exams</b>; use <b>Solve in the lab</b> on any question to see the full working.</li>
     <li>Export the current analysis from <b>Download</b>.</li></ol></section>
   <section><h2>Normalizing a table of data</h2><ol>
     <li>Open <b>Tables</b>. An example table is loaded; pick another from <b>Load an example</b>, upload a CSV, TSV, Markdown or Excel file, paste rows in <b>Text</b> view, or type into the <b>Grid</b>.</li>
