@@ -204,7 +204,7 @@ const LEARN_HTML = `
 <li>Wikipedia, “Database normalization”: <a href="https://en.wikipedia.org/wiki/Database_normalization" target="_blank" rel="noopener">en.wikipedia.org/wiki/Database_normalization</a>.</li>
 <li>NPTEL, Database Management System lectures: <a href="https://nptel.ac.in/" target="_blank" rel="noopener">nptel.ac.in</a>.</li>
 <li>Decomplexify, database normalization explainer: <a href="https://www.youtube.com/results?search_query=Decomplexify+database+normalization" target="_blank" rel="noopener">YouTube</a>.</li></ol>
-<h3>Tools</h3><ol class="refs"><li>Plain JavaScript, HTML and CSS; jsPDF for PDF export, JSZip for Word and CSV-bundle export, SheetJS for reading and writing Excel files; fonts from Google Fonts (Literata, Atkinson Hyperlegible, IBM Plex Mono).</li></ol>
+<h3>Tools</h3><ol class="refs"><li>Plain JavaScript, HTML and CSS; jsPDF for PDF export, SheetJS for reading uploaded Excel files; Excel, Word and CSV-bundle files are written by the app’s own code (src/files.js); fonts from Google Fonts (Literata, Atkinson Hyperlegible, IBM Plex Mono).</li></ol>
 </section>`;
 
 /* ---------- animated explainer: scenes drawn to SVG from a timeline ---------- */

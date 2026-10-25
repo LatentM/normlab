@@ -91,7 +91,13 @@ function diagramPNG(R) {
 const LIBS = {};
 function loadLib(url, global) {
   if (window[global]) return Promise.resolve(window[global]);
-  if (!LIBS[url]) LIBS[url] = new Promise((res, rej) => { const s = document.createElement('script'); s.src = url; s.onload = () => res(window[global]); s.onerror = () => rej(new Error('Could not load ' + global)); document.head.appendChild(s); });
+  if (!LIBS[url]) LIBS[url] = new Promise((res, rej) => {
+    const s = document.createElement('script'); s.src = url;
+    const fail = () => { delete LIBS[url]; s.remove(); rej(new Error('could not reach ' + new URL(url).host + ' (check the internet connection)')); };
+    const timer = setTimeout(fail, 15000); // a blocked or very slow network fails with a message instead of doing nothing
+    s.onload = () => { clearTimeout(timer); window[global] ? res(window[global]) : fail(); }; s.onerror = () => { clearTimeout(timer); fail(); };
+    document.head.appendChild(s);
+  });
   return LIBS[url];
 }
 
@@ -129,7 +135,6 @@ async function reportPDF(B, R) {
 }
 
 async function reportDOCX(B, R) {
-  await loadLib('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js', 'JSZip');
   const x = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const run = (t, o = {}) => `<w:r><w:rPr>${o.font ? `<w:rFonts w:ascii="${o.font}" w:hAnsi="${o.font}" w:cs="${o.font}"/>` : ''}${o.b ? '<w:b/>' : ''}${o.i ? '<w:i/>' : ''}${o.color ? `<w:color w:val="${o.color}"/>` : ''}<w:sz w:val="${o.sz || 21}"/></w:rPr><w:t xml:space="preserve">${x(t)}</w:t></w:r>`;
   const para = (runs, o = {}) => `<w:p><w:pPr><w:spacing w:before="${o.before || 0}" w:after="${o.after ?? 120}"/>${o.ind ? `<w:ind w:left="${o.ind}"/>` : ''}</w:pPr>${runs}</w:p>`;
@@ -152,13 +157,13 @@ async function reportDOCX(B, R) {
         + `<w:tr>${b.head.map((t) => cell(t, true)).join('')}</w:tr>` + b.rows.map((r) => `<w:tr>${r.map((t) => cell(t, false)).join('')}</w:tr>`).join('') + '</w:tbl>' + para('', { after: 120 });
     }
   });
-  const zip = new window.JSZip();
-  zip.file('[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
-  zip.file('_rels/.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
-  zip.file('word/_rels/document.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${fig ? '<Relationship Id="rIdImg1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/diagram.png"/>' : ''}</Relationships>`);
-  if (fig) zip.file('word/media/diagram.png', fig.url.split(',')[1], { base64: true });
-  zip.file('word/document.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"><w:body>${body}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="0" w:footer="0" w:gutter="0"/></w:sectPr></w:body></w:document>`);
-  return zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+  const files = [];
+  files.push({ name: '[Content_Types].xml', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>' });
+  files.push({ name: '_rels/.rels', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>' });
+  files.push({ name: 'word/_rels/document.xml.rels', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${fig ? '<Relationship Id="rIdImg1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/diagram.png"/>' : ''}</Relationships>` });
+  if (fig) files.push({ name: 'word/media/diagram.png', data: FILES.b64bytes(fig.url.split(',')[1]) });
+  files.push({ name: 'word/document.xml', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"><w:body>${body}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="0" w:footer="0" w:gutter="0"/></w:sectPr></w:body></w:document>` });
+  return new Blob([FILES.zip(files)], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
 }
 
 function reportHTML(B, R) {
@@ -254,7 +259,7 @@ RENDER.download = function () {
       if (f === 'pdf') await saveFile(`${safe}_${kind}_report.pdf`, await reportPDF(B, R), 'application/pdf');
       if (f === 'docx') await saveFile(`${safe}_${kind}_report.docx`, await reportDOCX(B, R), 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
       msg.textContent = '';
-    } catch (e) { msg.textContent = `${f.toUpperCase()} could not be created (${e.message}). The text report needs no extra library and always works.`; }
+    } catch (e) { msg.textContent = `${f.toUpperCase()} could not be created (${e.message}). PDF needs the internet; the Word and text reports work offline.`; }
     b.disabled = false;
   }));
   function bindSrc() { $$('input[name="dl-src"]', root).forEach((r) => r.addEventListener('change', () => { store.set('dl.source', r.value); RENDER.download(); })); }

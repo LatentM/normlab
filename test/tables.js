@@ -69,5 +69,19 @@ EX.forEach((ex) => {
   ok(!c.same && c.spurious.length === 2, 'lossy split creates spurious rows');
   eq(TBL.redundantCells({ cols: ['r', 'h'], rows: [['1', 'A'], ['1', 'A'], ['2', 'B']] }, { lhs: 1, rhs: 2 }).length, 1, 'redundant cell count');
 }
+/* built-in file writers (zip, xlsx): no internet needed for exports */
+{
+  const FILES = require('../src/files.js');
+  eq(FILES.crc32(new TextEncoder().encode('123456789')), 0xcbf43926, 'crc32 check value');
+  const z = Buffer.from(FILES.zip([{ name: 'a.csv', data: 'x,y\n1,2\n' }, { name: 'b.csv', data: 'ä' }]));
+  ok(z.readUInt32LE(0) === 0x04034b50, 'zip local header'); ok(z.readUInt32LE(z.length - 22) === 0x06054b50, 'zip end record');
+  eq(z.readUInt16LE(z.length - 12), 2, 'zip entry count');
+  eq(FILES.sheetNames(['A/B', 'a/b', 'x'.repeat(40)]), ['A_B', 'a_b_2', 'x'.repeat(31)], 'sheet names safe and unique');
+  const x = Buffer.from(FILES.xlsx([{ name: 'T', cols: ['pin', 'n', 'name'], rows: [['600127', '3', 'R&D <x>'], ['0123', null, '']] }])).toString('latin1');
+  ok(x.includes('<v>600127</v>') && x.includes('<v>3</v>'), 'xlsx numbers as numbers');
+  ok(x.includes('<t xml:space="preserve">0123</t>'), 'xlsx leading-zero code stays text');
+  ok(x.includes('R&amp;D &lt;x&gt;'), 'xlsx escapes text');
+  if (process.env.WRITE_SAMPLES) { const fs = require('fs'); fs.writeFileSync(process.env.WRITE_SAMPLES + '/sample.xlsx', FILES.xlsx([{ name: 'Student', cols: ['regno', 'name'], rows: [['25BCE1001', 'Arjun'], ['25BCE1002', 'Meera']] }, { name: 'Pin', cols: ['pincode', 'city'], rows: [['600127', 'Chennai']] }])); fs.writeFileSync(process.env.WRITE_SAMPLES + '/sample.zip', FILES.zip([{ name: 'a.csv', data: 'x,y\n1,2\n' }, { name: 'b.csv', data: 'ä' }])); }
+}
 console.log(`${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

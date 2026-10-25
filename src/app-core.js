@@ -67,7 +67,11 @@ function typeLabel(t) { return { mcq: 'Single answer', msq: 'One or more answers
 /* file saving: the artifact viewer offers a mediated save, a normal website uses a link */
 let downloadsApi; let downloadsProbe;
 function probeDownloads() {
-  if (!downloadsProbe) downloadsProbe = (window.claude && window.claude.use ? window.claude.use('downloads') : Promise.resolve(null)).then((d) => (downloadsApi = d)).catch(() => null);
+  if (!downloadsProbe) {
+    const ask = window.claude && window.claude.use ? Promise.resolve().then(() => window.claude.use('downloads')) : Promise.resolve(null);
+    const giveUp = new Promise((res) => setTimeout(() => res(null), 3000)); // never let a silent viewer block the save
+    downloadsProbe = Promise.race([ask, giveUp]).then((d) => (downloadsApi = d && typeof d.save === 'function' ? d : null)).catch(() => (downloadsApi = null));
+  }
   return downloadsProbe;
 }
 async function saveFile(filename, data, mime) {

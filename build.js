@@ -1,7 +1,7 @@
 // node build.js → dist/index.html (deployable website) and dist/artifact.html (page body for the Claude artifact)
 const fs = require('fs'); const path = require('path');
 const src = (f) => fs.readFileSync(path.join(__dirname, 'src', f), 'utf8');
-const order = ['engine.js', 'table-engine.js', 'table-examples.js', 'pyq.js', 'app-core.js', 'app-lab.js', 'app-table.js', 'app-quiz.js', 'app-pyq.js', 'app-content.js', 'app-report.js', 'app-main.js'];
+const order = ['engine.js', 'files.js', 'table-engine.js', 'table-examples.js', 'pyq.js', 'app-core.js', 'app-lab.js', 'app-table.js', 'app-quiz.js', 'app-pyq.js', 'app-content.js', 'app-report.js', 'app-main.js'];
 const js = order.map((f) => `/* ---- ${f} ---- */\n` + src(f)).join('\n').replace(/<\/script/gi, '<\\/script');
 const body = src('template.html').replace('/*STYLES*/', () => src('styles.css')).replace('/*SCRIPTS*/', () => js);
 fs.mkdirSync(path.join(__dirname, 'dist'), { recursive: true });

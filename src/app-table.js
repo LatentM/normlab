@@ -468,20 +468,20 @@ const TB_BIND = {
       catch (e) { const r = document.createRange(); r.selectNodeContents($('#tb-sql')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast('Press Ctrl+C to copy the selected SQL'); }
     });
     $('#tb-dl-sql').addEventListener('click', () => saveFile(`${R.t.name}_${cur()}_${TB.dialect}.sql`, $('#tb-sql').textContent, 'application/sql'));
+    // built-in writers (src/files.js): no library download, so these work offline and on filtered networks
+    const exportTables = () => [{ name: '1NF_' + R.t.name, cols: R.t.cols, rows: R.t.rows }]
+      .concat(R.stages[cur()].tables.map((tb) => ({ name: tb.name, cols: tb.P.idx.map((j) => R.t.cols[j]), rows: tb.P.rows })));
     $('#tb-dl-csv').addEventListener('click', async () => {
-      try { await loadLib('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js', 'JSZip'); const z = new window.JSZip();
-        z.file(`${R.t.name}_1NF.csv`, TBL.toCSV(R.t.cols, R.t.rows));
-        R.stages[cur()].tables.forEach((tb) => z.file(`${tb.name}.csv`, TBL.toCSV(tb.P.idx.map((j) => R.t.cols[j]), tb.P.rows)));
-        saveFile(`${R.t.name}_${cur()}_tables.zip`, await z.generateAsync({ type: 'blob' }), 'application/zip'); } catch (e) { toast('Could not build the zip: ' + e.message); }
+      try {
+        const files = exportTables().map((s, i) => ({ name: (i === 0 ? `${R.t.name}_1NF` : s.name) + '.csv', data: '﻿' + TBL.toCSV(s.cols, s.rows) }));
+        const seen = new Set(); files.forEach((f) => { let n = f.name, k = 2; while (seen.has(n.toLowerCase())) n = f.name.replace(/\.csv$/, `_${k++}.csv`); seen.add(n.toLowerCase()); f.name = n; });
+        await saveFile(`${R.t.name}_${cur()}_tables.zip`, new Blob([FILES.zip(files)], { type: 'application/zip' }), 'application/zip');
+      } catch (e) { toast('Could not build the zip: ' + (e && e.message || e)); }
     });
     $('#tb-dl-xlsx').addEventListener('click', async () => {
-      try { await loadLib('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js', 'XLSX'); const X = window.XLSX; const wb = X.utils.book_new();
-        const sheet = (cols, rows) => X.utils.aoa_to_sheet([cols].concat(rows.map((r) => r.map((v) => (v == null ? '' : /^-?\d+(\.\d+)?$/.test(v) && !/^0\d/.test(v) && v.length < 15 ? Number(v) : v)))));
-        const used = new Set(); const nm = (s) => { let n = s.slice(0, 31), k = 2; while (used.has(n.toLowerCase())) n = s.slice(0, 28) + '_' + k++; used.add(n.toLowerCase()); return n; };
-        X.utils.book_append_sheet(wb, sheet(R.t.cols, R.t.rows), nm('1NF_' + R.t.name));
-        R.stages[cur()].tables.forEach((tb) => X.utils.book_append_sheet(wb, sheet(tb.P.idx.map((j) => R.t.cols[j]), tb.P.rows), nm(tb.name)));
-        const buf = X.write(wb, { bookType: 'xlsx', type: 'array' });
-        saveFile(`${R.t.name}_${cur()}_tables.xlsx`, new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'); } catch (e) { toast('Could not build the workbook: ' + e.message); }
+      const mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      try { await saveFile(`${R.t.name}_${cur()}_tables.xlsx`, new Blob([FILES.xlsx(exportTables())], { type: mime }), mime); }
+      catch (e) { toast('Could not build the workbook: ' + (e && e.message || e)); }
     });
     $('#tb-report').addEventListener('click', () => store.set('dl.source', 'table'));
   }
@@ -491,7 +491,8 @@ async function tbUpload(e) {
   const f = e.target.files[0]; if (!f) return;
   try {
     if (/\.xlsx?$/i.test(f.name)) {
-      await loadLib('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js', 'XLSX');
+      try { await loadLib('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js', 'XLSX'); }
+      catch (err) { toast('Reading Excel files needs the internet. Save the sheet as CSV (File → Save As → CSV) and upload that instead.'); return; }
       const wb = window.XLSX.read(await f.arrayBuffer(), { type: 'array' }); const ws = wb.Sheets[wb.SheetNames[0]];
       const aoa = window.XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: '' }).filter((r) => r.some((c) => String(c).trim() !== ''));
       if (aoa.length < 2) { toast('The first sheet needs a header row and at least one data row.'); return; }

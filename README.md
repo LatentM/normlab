@@ -17,10 +17,15 @@ Source lives in `src/`. After editing, run:
 
     node build.js        # writes dist/index.html and dist/artifact.html
     node test/run.js     # 2,885 engine checks, including every computational PYQ re-solved
-    node test/tables.js  # 209 table-engine checks: parsing, 1NF, discovery, every stage rejoined on the data, SQL
+    node test/tables.js  # 217 checks: parsing, 1NF, discovery, every stage rejoined on the data, SQL, zip/xlsx writers
 
 `test/browser.py` is the headless end-to-end check (Playwright): it drives every view,
 both themes, all three downloads and phone/tablet widths.
+`test/exports_offline.py` blocks the internet libraries and checks that every Tables export
+(.sql, Excel, CSV zip) and the Word reports still work.
+
+Excel, CSV-zip and Word files are written by `src/files.js`, so they need no internet.
+Only PDF reports (jsPDF) and reading uploaded .xlsx files (SheetJS) load a library online.
 
 ## Before submission
 - Team: Yusuf Khan (25BCE5307), Mohammed Mubashir Hasan (25BCE5209), E T Suhas Aradhya (25BCE5560). Set every `photo` field in the `TEAM` block at the top of `src/app-content.js`
@@ -31,6 +36,7 @@ both themes, all three downloads and phone/tablet widths.
 | File | What it holds |
 |---|---|
 | `src/engine.js` | Parser and every algorithm (pure functions, no DOM) |
+| `src/files.js` | Built-in ZIP and Excel (.xlsx) writers used by every export |
 | `src/table-engine.js` | Table engine: parsing, 1NF repair, dependency/key discovery, projection, rejoin, SQL |
 | `src/table-examples.js` | Sample tables |
 | `src/app-table.js` | Tables page (six steps) |
