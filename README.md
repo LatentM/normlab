@@ -1,6 +1,6 @@
 # Normalization Virtual Lab
 
-BACSE202 Database Systems, digital assignment, VIT Chennai.
+BACSE202 Database Systems, digital assignment, VIT .
 Guide: Dr. Swaminathan A.
 
 The lab does two kinds of normalization. You can give it a relation as attributes and
